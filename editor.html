@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioLink Studio</title>
+  <style>
+    :root {
+      --bg:#0c0e16; --s0:#11131e; --s1:#181b28; --s2:#1e2235;
+      --bd:#2a2e45; --bd2:#3a3f5c;
+      --a:#6366f1; --a2:#4f46e5; --ag:rgba(99,102,241,.15);
+      --t:#f1f5f9; --t2:#94a3b8; --t3:#64748b;
+      --ok:#10b981; --er:#ef4444;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+    /* ナビ */
+    nav{height:52px;flex-shrink:0;background:var(--s0);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 14px;gap:10px;}
+    .logo{font-size:15px;font-weight:900;white-space:nowrap;}
+    .logo em{font-style:normal;font-size:8px;font-weight:900;padding:2px 5px;border-radius:3px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;margin-left:5px;vertical-align:middle;}
+    .nav-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .psel{background:var(--s1);border:1px solid var(--bd);border-radius:7px;color:var(--t);padding:4px 9px;font-size:12px;font-weight:600;outline:none;cursor:pointer;max-width:190px;}
+    .nav-rt{display:flex;align-items:center;gap:5px;}
+    .sind{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;transition:all .3s;}
+    .sind.sv{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+    .sind.us{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+
+    /* ボタン */
+    .btn{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;text-decoration:none;white-space:nowrap;transition:background .12s,border-color .12s;}
+    .bp{background:var(--a);color:#fff;border-color:var(--a);}
+    .bp:hover{background:var(--a2);}
+    .bs{background:var(--s1);color:var(--t);border-color:var(--bd);}
+    .bs:hover{background:var(--s2);border-color:var(--bd2);}
+    .bg_{background:#059669;color:#fff;}
+    .bg_:hover{background:#047857;}
+
+    /* レイアウト */
+    .layout{flex:1;display:flex;overflow:hidden;min-height:0;}
+
+    /* 左ペイン */
+    .lp{width:500px;min-width:380px;display:flex;flex-direction:column;border-right:1px solid var(--bd);overflow:hidden;}
+
+    /* クイックプロフ */
+    .qp{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--s0);}
+    .av-wrap{position:relative;width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--a);flex-shrink:0;cursor:pointer;background:var(--s2);}
+    .av-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
+    .av-wrap-ov{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:15px;opacity:0;transition:opacity .15s;}
+    .av-wrap:hover .av-wrap-ov{opacity:1;}
+    .qp-f{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .fl{display:flex;flex-direction:column;gap:3px;}
+    .fl-l{font-size:9px;font-weight:800;color:var(--a);text-transform:uppercase;letter-spacing:.05em;}
+    .inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t);padding:5px 9px;font-size:12px;font-weight:600;outline:none;}
+    .inp:focus{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);}
+    .pfx{display:flex;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:6px;overflow:hidden;}
+    .pfx:focus-within{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);}
+    .pfx .px{padding:0 6px;color:var(--t3);font-size:12px;font-weight:700;flex-shrink:0;}
+    .pfx input{border:none;background:transparent;padding:5px 5px 5px 0;font-size:12px;font-weight:600;color:var(--t);outline:none;width:100%;}
+
+    /* タブ */
+    .tabs{display:flex;padding:8px 12px;gap:4px;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--s0);}
+    .tab{flex:1;padding:6px 4px;background:transparent;border:1px solid transparent;color:var(--t3);font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;text-align:center;}
+    .tab:hover{color:var(--t);}
+    .tab.on{background:var(--s1);color:var(--t);border-color:var(--bd);}
+
+    /* タブコンテンツ */
+    .tc{display:none;flex:1;overflow-y:auto;padding:14px;}
+    .tc.on{display:block;}
+    .tc::-webkit-scrollbar{width:4px;}
+    .tc::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px;}
+
+    /* セクション */
+    .sec{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:12px;}
+    .sec-t{font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+    .fc{margin-bottom:10px;}
+    .fc:last-child{margin-bottom:0;}
+    .fc>label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px;}
+    textarea.inp{resize:vertical;min-height:68px;}
+    .hint{font-size:11px;color:var(--t3);margin-top:3px;}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+    /* クイック追加 */
+    .qa{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:10px;}
+    .qa-t{font-size:9px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;}
+    .chips{display:flex;flex-wrap:wrap;gap:5px;}
+    .chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;}
+    .cy{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.2);}
+    .cy:hover{background:#ef4444;color:#fff;}
+    .ct{background:rgba(37,244,238,.07);color:#5eead4;border-color:rgba(37,244,238,.15);}
+    .ct:hover{background:#fe2c55;color:#fff;}
+    .cw{background:rgba(255,255,255,.06);color:#e2e8f0;border-color:rgba(255,255,255,.12);}
+    .cw:hover{background:#fff;color:#000;}
+    .ci{background:rgba(225,48,108,.1);color:#f9a8d4;border-color:rgba(225,48,108,.2);}
+    .ci:hover{background:linear-gradient(135deg,#833ab4,#fd1d1d);color:#fff;}
+    .cl{background:rgba(6,199,85,.1);color:#86efac;border-color:rgba(6,199,85,.2);}
+    .cl:hover{background:#06c755;color:#fff;}
+    .cd{background:rgba(88,101,242,.1);color:#a5b4fc;border-color:rgba(88,101,242,.2);}
+    .cd:hover{background:#5865f2;color:#fff;}
+    .ch{background:rgba(99,102,241,.1);color:#c4b5fd;border-color:rgba(99,102,241,.18);}
+    .ch:hover{background:var(--a);color:#fff;}
+    .cc{background:var(--s2);color:var(--t2);border-color:var(--bd);}
+    .cc:hover{background:var(--bd);}
+
+    /* リンクカード */
+    .ll{display:flex;flex-direction:column;gap:7px;}
+    .lc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:9px 11px;display:flex;gap:9px;align-items:flex-start;}
+    .lc:hover{border-color:var(--bd2);}
+    .lc.hd{border-left:3px solid var(--a);}
+
+    /* アイコンバッジ */
+    .ib{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .ib-yt{background:linear-gradient(135deg,#ff0000,#b80000);}
+    .ib-tt{background:linear-gradient(135deg,#090a0f,#fe2c55 55%,#25f4ee);}
+    .ib-tw{background:linear-gradient(135deg,#24292e,#0d1117);}
+    .ib-ig{background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);}
+    .ib-li{background:linear-gradient(135deg,#06c755,#009c3b);}
+    .ib-dc{background:linear-gradient(135deg,#5865f2,#3c45a5);}
+    .ib-tc{background:linear-gradient(135deg,#9146ff,#5c16c5);}
+    .ib-sh{background:linear-gradient(135deg,#f59e0b,#b45309);}
+    .ib-gl{background:linear-gradient(135deg,#0284c7,#0369a1);}
+    .ib-ml{background:linear-gradient(135deg,#6366f1,#4338ca);}
+    .ib-lk{background:linear-gradient(135deg,#8b5cf6,#4f46e5);}
+    .ib-hd{background:rgba(99,102,241,.15);color:#a5b4fc;font-size:11px;font-weight:800;}
+
+    .lf{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+    .lr1{display:flex;gap:5px;align-items:center;}
+    .lr2{display:flex;gap:5px;}
+    .lr3{display:flex;align-items:center;gap:6px;}
+    .isel{background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t);padding:3px 5px;font-size:10px;outline:none;cursor:pointer;}
+    .lt{flex:1;font-size:12px;font-weight:700;}
+    .lu{flex:2;font-size:11px;}
+    .ls{flex:1;font-size:11px;}
+
+    /* バッジ */
+    .bsels{display:flex;gap:4px;}
+    .bo{padding:2px 7px;border-radius:20px;font-size:9px;font-weight:800;cursor:pointer;border:1.5px solid transparent;opacity:.5;}
+    .bo.on{opacity:1;border-color:rgba(255,255,255,.5);}
+    .bo:hover{opacity:.8;}
+    .bon{background:var(--s2);color:var(--t3);border-color:var(--bd);}
+    .boh{background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;}
+    .bol{background:linear-gradient(135deg,#dc2626,#7f1d1d);color:#fff;}
+    .bow{background:linear-gradient(135deg,#10b981,#059669);color:#fff;}
+    .bog{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;}
+
+    .la{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+    .mvcol{display:flex;flex-direction:column;gap:2px;}
+    .mv{width:20px;height:16px;background:var(--s2);border:1px solid var(--bd);color:var(--t3);border-radius:3px;font-size:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mv:hover:not([disabled]){background:var(--a);color:#fff;border-color:var(--a);}
+    .mv[disabled]{opacity:.25;cursor:default;}
+    .tog{position:relative;display:inline-block;width:28px;height:15px;flex-shrink:0;}
+    .tog input{opacity:0;width:0;height:0;position:absolute;}
+    .tsl{position:absolute;inset:0;background:var(--s2);border:1px solid var(--bd);border-radius:15px;transition:background .2s;cursor:pointer;}
+    .tsl::before{content:'';position:absolute;height:9px;width:9px;left:2px;bottom:2px;background:var(--t3);border-radius:50%;transition:transform .2s,background .2s;}
+    input:checked+.tsl{background:var(--a);border-color:var(--a);}
+    input:checked+.tsl::before{transform:translateX(13px);background:#fff;}
+    .del{background:transparent;border:none;color:var(--t3);cursor:pointer;font-size:12px;padding:2px 3px;border-radius:3px;}
+    .del:hover{color:var(--er);background:rgba(239,68,68,.1);}
+    .clk{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.18);white-space:nowrap;}
+    .empty{text-align:center;padding:28px 16px;color:var(--t3);background:var(--s1);border:1px dashed var(--bd);border-radius:10px;font-size:13px;}
+
+    /* テーマグリッド */
+    .tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px;}
+    .tc_{background:var(--s2);border:2px solid var(--bd);border-radius:9px;padding:6px;cursor:pointer;text-align:center;}
+    .tc_:hover{border-color:var(--bd2);}
+    .tc_.on{border-color:var(--a);background:var(--ag);}
+    .tsw{width:100%;height:28px;border-radius:5px;margin-bottom:4px;}
+    .tn{font-size:9px;font-weight:800;color:var(--t);}
+    .tt_{font-size:8px;color:var(--t3);}
+    .ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin-top:6px;}
+    .opt{background:var(--s2);border:2px solid var(--bd);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:11px;font-weight:700;color:var(--t2);}
+    .opt:hover{border-color:var(--bd2);color:var(--t);}
+    .opt.on{border-color:var(--a);background:var(--ag);color:var(--t);}
+
+    /* 右ペイン */
+    .rp{flex:1;background:#07080d;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .ph-w{display:flex;flex-direction:column;align-items:center;gap:8px;}
+    .ph-bar{width:296px;display:flex;align-items:center;justify-content:space-between;}
+    .ph-bar span{font-size:10px;font-weight:700;color:var(--t3);}
+    .iphone{width:296px;height:614px;background:#000;border-radius:42px;border:7px solid #1c1c1e;box-shadow:0 0 0 1px #3a3a3c,0 20px 50px rgba(0,0,0,.9);position:relative;overflow:hidden;flex-shrink:0;}
+    .notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:86px;height:20px;background:#000;border-radius:12px;z-index:10;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .cam{width:7px;height:7px;border-radius:50%;background:#1c1c1e;border:1px solid #2a2a2c;}
+    .spk{width:32px;height:4px;border-radius:4px;background:#1c1c1e;}
+    .i-screen{position:absolute;inset:0;}
+    .i-screen iframe{width:100%;height:100%;border:none;display:block;}
+    .homebar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:90px;height:3px;background:rgba(255,255,255,.25);border-radius:3px;z-index:10;pointer-events:none;}
+
+    /* モーダル */
+    .mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;}
+    .mov.on{display:flex;}
+    .modal{background:var(--s1);border:1px solid var(--bd2);border-radius:12px;width:88%;max-width:400px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.7);}
+    .mh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);}
+    .mh h3{font-size:13px;font-weight:800;}
+    .mcls{background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+    .mcls:hover{background:var(--s2);color:var(--t);}
+    .mb{padding:14px 16px;}
+    .mf{padding:10px 16px;background:var(--s0);border-top:1px solid var(--bd);display:flex;gap:7px;justify-content:flex-end;}
+    .fw{width:100%;}
+    .errmsg{color:var(--er);font-size:11px;margin-top:6px;padding:5px 8px;background:rgba(239,68,68,.07);border-radius:5px;border:1px solid rgba(239,68,68,.2);display:none;}
+    .steps{counter-reset:s;margin-bottom:12px;}
+    .steps li{counter-increment:s;display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:11px;color:var(--t2);line-height:1.5;}
+    .steps li:last-child{border-bottom:none;}
+    .steps li::before{content:counter(s);flex-shrink:0;width:18px;height:18px;border-radius:50%;background:var(--a);color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+    code{background:var(--s2);padding:1px 4px;border-radius:3px;font-size:10px;}
+    .expre{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:10px;font-size:10px;font-family:monospace;color:#6ee7b7;max-height:140px;overflow:auto;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="logo">🔗 BioLink<em>Studio</em></div>
+  <div class="nav-mid">
+    <select id="psel" class="psel"></select>
+    <button id="btnNew" class="btn bs">＋</button>
+  </div>
+  <div class="nav-rt">
+    <div class="sind sv" id="sind">保存済み</div>
+    <button id="btnShare" class="btn bs">📤 QR</button>
+    <button id="btnExport" class="btn bg_">📦 GitHub</button>
+    <a id="btnPv" class="btn bs" href="index.html" target="_blank">🔗 公開</a>
+    <button id="btnSave" class="btn bp">💾 保存</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="lp">
+    <!-- クイックプロフ -->
+    <div class="qp">
+      <div class="av-wrap" id="avW">
+        <img id="avI" src="" alt="">
+        <label class="av-wrap-ov" for="avF">📷
+          <input type="file" id="avF" accept="image/*" style="display:none">
+        </label>
+      </div>
+      <div class="qp-f">
+        <div class="fl">
+          <span class="fl-l">表示名</span>
+          <input class="inp" id="dispName" type="text" placeholder="クリエイター名">
+        </div>
+        <div class="fl">
+          <span class="fl-l">ID</span>
+          <div class="pfx"><span class="px">@</span><input id="uname" type="text" placeholder="my_account"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab on" data-tab="links">🔗 リンク</button>
+      <button class="tab" data-tab="profile">👤 プロフィール</button>
+      <button class="tab" data-tab="social">📱 SNS</button>
+      <button class="tab" data-tab="design">🎨 デザイン</button>
+    </div>
+
+    <!-- リンクタブ -->
+    <div id="tc-links" class="tc on">
+      <div class="qa">
+        <div class="qa-t">ワンタップ追加</div>
+        <div class="chips">
+          <button class="chip cy" data-p="youtube">🔴 YouTube</button>
+          <button class="chip ct" data-p="tiktok">🎵 TikTok</button>
+          <button class="chip cw" data-p="twitter">✖ X</button>
+          <button class="chip ci" data-p="instagram">📸 Instagram</button>
+          <button class="chip cl" data-p="line">💬 LINE</button>
+          <button class="chip cd" data-p="discord">👾 Discord</button>
+          <button class="chip ch" data-p="header">🏷 見出し</button>
+          <button class="chip cc" data-p="link">＋ 汎用</button>
+        </div>
+      </div>
+      <div class="ll" id="ll"></div>
+    </div>
+
+    <!-- プロフタブ -->
+    <div id="tc-profile" class="tc">
+      <div class="sec">
+        <div class="sec-t">自己紹介</div>
+        <div class="fc">
+          <label>Bio（自己紹介文）</label>
+          <textarea class="inp" id="bioInp" rows="4" placeholder="YouTubeやTikTokで配信中！✨"></textarea>
+        </div>
+        <div class="fc">
+          <label>アバター画像URL</label>
+          <input class="inp" id="avUrl" type="text" placeholder="https://...">
+          <div class="hint">または左のアバターをクリックしてファイル選択</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNSタブ -->
+    <div id="tc-social" class="tc">
+      <div class="sec">
+        <div class="sec-t">SNSアイコンバー</div>
+        <p class="hint" style="margin-bottom:10px;">URLを入力したSNSのみ表示されます</p>
+        <div class="g2" id="socialGrid"></div>
+      </div>
+    </div>
+
+    <!-- デザインタブ -->
+    <div id="tc-design" class="tc">
+      <div class="sec">
+        <div class="sec-t">カラーテーマ</div>
+        <div class="tg" id="themeGrid"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-t">ボタン形状</div>
+        <div class="ogrid" id="styleGrid"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-t">背景エフェクト</div>
+        <div class="ogrid" id="particleGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右ペイン -->
+  <div class="rp">
+    <div class="ph-w">
+      <div class="ph-bar">
+        <span>リアルタイムプレビュー</span>
+        <button id="btnReset" class="btn bs" style="font-size:10px;padding:3px 8px;">↺</button>
+      </div>
+      <div class="iphone">
+        <div class="notch"><div class="cam"></div><div class="spk"></div><div class="cam"></div></div>
+        <div class="i-screen"><iframe id="pvF" src="index.html" title="Preview"></iframe></div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新規モーダル -->
+<div class="mov" id="m-new">
+  <div class="modal">
+    <div class="mh"><h3>新規アカウント</h3><button class="mcls" data-m="m-new">✕</button></div>
+    <div class="mb">
+      <div class="fc"><label>ID</label><div class="pfx"><span class="px">@</span><input class="inp" id="nU" type="text" placeholder="sub_account" style="border:none;background:transparent;"></div></div>
+      <div class="fc"><label>表示名</label><input class="inp" id="nD" type="text" placeholder="サブチャンネル"></div>
+      <div class="errmsg" id="nErr"></div>
+    </div>
+    <div class="mf"><button id="btnCreate" class="btn bp fw">作成</button></div>
+  </div>
+</div>
+
+<!-- エクスポートモーダル -->
+<div class="mov" id="m-export">
+  <div class="modal">
+    <div class="mh"><h3>📦 GitHub Pages 公開</h3><button class="mcls" data-m="m-export">✕</button></div>
+    <div class="mb">
+      <ol class="steps">
+        <li>「ダウンロード」で <code>profile-data.js</code> を取得</li>
+        <li><code>biolink/static/</code> フォルダごと GitHub にプッシュ</li>
+        <li>Settings → Pages → Deploy from branch → main / <code>/biolink/static</code></li>
+        <li><code>https://ユーザー名.github.io/リポジトリ名/</code> で公開完了！</li>
+      </ol>
+      <div class="expre" id="expPre"></div>
+    </div>
+    <div class="mf"><button id="btnDl" class="btn bg_ fw">⬇ profile-data.js をダウンロード</button></div>
+  </div>
+</div>
+
+<!-- QRモーダル -->
+<div class="mov" id="m-share">
+  <div class="modal">
+    <div class="mh"><h3>📤 QR / 共有</h3><button class="mcls" data-m="m-share">✕</button></div>
+    <div class="mb" style="text-align:center;">
+      <img id="qrI" src="" alt="QR" style="width:130px;height:130px;border-radius:8px;border:3px solid #fff;margin-bottom:8px;">
+      <div class="fc" style="text-align:left;">
+        <label>ローカルURL</label>
+        <div style="display:flex;gap:6px;">
+          <input class="inp" id="sUrl" type="text" readonly>
+          <button class="btn bp" id="cpUrl">コピー</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// BioLink Studio - 軽量エディター
+// ================================================================
+const SK = 'bls_v3';
+
+const DEF = {
+  username:'my_account', display_name:'公式クリエイター',
+  bio:'YouTubeやTikTokで動画配信中！\nお仕事・コラボのご依頼はリンクからどうぞ✨',
+  avatar_url:'', theme:'glass_purple', button_style:'pill', particle_effect:'sparkle',
+  social_links:{youtube:'',tiktok:'',twitter:'',instagram:'',line:'',discord:'',twitch:'',mail:''},
+  links:[
+    {id:1,title:'おすすめコンテンツ',url:'',subtitle:'',icon:'',link_type:'header',is_active:1,badge:'',click_count:0},
+    {id:2,title:'YouTubeチャンネル登録！',url:'https://youtube.com/',subtitle:'毎週更新中！高評価よろしくね',icon:'youtube',link_type:'button',is_active:1,badge:'hot',click_count:0},
+    {id:3,title:'TikTok公式アカウント',url:'https://tiktok.com/',subtitle:'ショート動画を毎日投稿',icon:'tiktok',link_type:'button',is_active:1,badge:'new',click_count:0},
+  ]
+};
+const PST = {
+  youtube: {title:'YouTubeチャンネル登録！',url:'https://youtube.com/',subtitle:'最新動画をチェック',icon:'youtube',badge:'hot'},
+  tiktok:  {title:'TikTok公式アカウント',url:'https://tiktok.com/',subtitle:'ショート動画毎日更新',icon:'tiktok',badge:'new'},
+  twitter: {title:'公式X（Twitter）',url:'https://x.com/',subtitle:'最新告知・つぶやき',icon:'twitter',badge:''},
+  instagram:{title:'公式Instagram',url:'https://instagram.com/',subtitle:'写真・ストーリー',icon:'instagram',badge:''},
+  line:    {title:'公式LINE 友だち追加',url:'https://line.me/',subtitle:'限定クーポン配布中',icon:'line',badge:'gift'},
+  discord: {title:'公式Discordサーバー',url:'https://discord.gg/',subtitle:'ファン交流',icon:'discord',badge:''},
+  header:  {title:'おすすめコンテンツ',url:'',subtitle:'',icon:'',link_type:'header',badge:''},
+  link:    {title:'公式ウェブサイト',url:'https://',subtitle:'',icon:'link',badge:''},
+};
+const ICLS = {youtube:'ib-yt',tiktok:'ib-tt',twitter:'ib-tw',instagram:'ib-ig',line:'ib-li',discord:'ib-dc',twitch:'ib-tc',shop:'ib-sh',globe:'ib-gl',mail:'ib-ml',link:'ib-lk'};
+const IEMO = {youtube:'🔴',tiktok:'🎵',twitter:'✖️',instagram:'📸',line:'💬',discord:'👾',twitch:'🟣',shop:'🛍️',globe:'🌐',mail:'✉️',link:'🔗'};
+const THEMES=[
+  {id:'glass_purple',n:'Glass Purple',t:'すりガラス',s:'linear-gradient(135deg,#120e2e,#ff0080)'},
+  {id:'pastel_pink', n:'Pastel Pink', t:'LitLink風', s:'linear-gradient(135deg,#fceceb,#ffb7b2)'},
+  {id:'dark_neon',   n:'Dark Neon',   t:'サイバー',  s:'linear-gradient(135deg,#0a0a0f,#00f2fe)'},
+  {id:'clean_minimal',n:'Clean',      t:'シンプル',  s:'linear-gradient(180deg,#fff,#cbd5e1)'},
+  {id:'sunset_orange',n:'Sunset',     t:'夕焼け',    s:'linear-gradient(135deg,#2b1055,#ff7e5f)'},
+  {id:'emerald_green',n:'Emerald',    t:'自然',      s:'linear-gradient(135deg,#093028,#2ecc71)'},
+  {id:'ocean_breeze', n:'Ocean',      t:'爽快',      s:'linear-gradient(135deg,#0f2027,#00c6ff)'},
+];
+const BTNS=[{id:'pill',l:'💊 カプセル'},{id:'rounded',l:'🔲 角丸'},{id:'glass',l:'🧊 ガラス'},{id:'shadow',l:'🪞 シャドウ'}];
+const PFXS=[{id:'none',l:'なし'},{id:'sparkle',l:'✨ キラキラ'},{id:'stars',l:'⭐ 星空'},{id:'sakura',l:'🌸 さくら'}];
+const SNS_L={youtube:'🔴 YouTube',tiktok:'🎵 TikTok',twitter:'✖️ X',instagram:'📸 Instagram',line:'💬 LINE',discord:'👾 Discord',twitch:'🟣 Twitch',mail:'✉️ メール'};
+const SNS_P={youtube:'https://youtube.com/@...',tiktok:'https://tiktok.com/@...',twitter:'https://x.com/...',instagram:'https://instagram.com/...',line:'https://line.me/R/ti/p/...',discord:'https://discord.gg/...',twitch:'https://twitch.tv/...',mail:'mailto:info@example.com'};
+
+// ─── ステート ───
+let db={}, cur='', prof={};
+
+function loadDB(){
+  try{db=JSON.parse(localStorage.getItem(SK)||'{}');}catch(_){db={};}
+  if(!Object.keys(db).length){
+    for(const oldKey of ['biolink_v2', 'biolink_all', 'biolink_data']){
+      try{
+        const raw = localStorage.getItem(oldKey);
+        if(!raw) continue;
+        const parsed = JSON.parse(raw);
+        if(parsed.username && parsed.links){
+          db[parsed.username] = parsed;
+          break;
+        } else if(typeof parsed === 'object' && Object.keys(parsed).length){
+          db = parsed;
+          break;
+        }
+      }catch(_){}
+    }
+  }
+  if(!Object.keys(db).length) db[DEF.username]=clone(DEF);
+  cur=Object.keys(db)[0];
+  prof=db[cur];
+}
+
+function saveDB(){
+  clearTimeout(_saveT);
+  const nu = (prof.username || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'') || 'my_account';
+  prof.username = nu;
+  if(nu !== cur){
+    if(!db[nu]){
+      delete db[cur];
+      cur = nu;
+    } else {
+      // 既に存在する別のIDなら戻す
+      prof.username = cur;
+      const unEl = document.getElementById('uname');
+      if(unEl) unEl.value = cur;
+    }
+  }
+  db[cur] = prof;
+  localStorage.setItem(SK, JSON.stringify(db));
+  markSv();
+  rebuildPsel();
+  pushPreview();
+}
+
+function switchProf(u){
+  saveDB(); // 切替前に保存
+  cur = u;
+  prof = db[u];
+  fillForm();
+  pushPreview();
+}
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+// ─── debounce（軽量・key固定）───
+let _saveT = null;
+function dSave(){ clearTimeout(_saveT); _saveT = setTimeout(saveDB, 400); }
+
+// ─── 保存状態 ───
+function markSv(){
+  const e = document.getElementById('sind');
+  if(e){ e.className = 'sind sv'; e.textContent = '保存済み'; }
+}
+function markUs(){
+  const e = document.getElementById('sind');
+  if(e){ e.className = 'sind us'; e.textContent = '未保存'; }
+}
+
+// ─── モーダル ───
+function om(id){ document.getElementById(id).classList.add('on'); }
+function cm(id){ document.getElementById(id).classList.remove('on'); }
+
+// ─── preview postMessage ───
+const pvF = document.getElementById('pvF');
+let pvReady = false;
+let _pvT = null;
+
+pvF.addEventListener('load', ()=>{ pvReady=true; pushPreview(); });
+
+function pushPreview(){
+  if(!pvReady) return;
+  clearTimeout(_pvT);
+  _pvT = setTimeout(()=>{
+    try{ pvF.contentWindow.postMessage({type:'BIOLINK_UPDATE',data:clone(prof)},'*'); }catch(_){}
+  }, 80); // 80ms 遅延でバースト抑制
+}
+
+// ─── 初期化 ───
+function init(){
+  loadDB();
+  buildStatics();
+  fillForm();
+  bindGlobal();
+}
+
+function buildStatics(){
+  rebuildPsel();
+
+  // SNSグリッド
+  document.getElementById('socialGrid').innerHTML =
+    Object.keys(SNS_L).map(p=>
+      `<div class="fc"><label>${SNS_L[p]}</label><input class="inp snp" type="text" data-p="${p}" placeholder="${SNS_P[p]}"></div>`
+    ).join('');
+
+  // テーマ
+  document.getElementById('themeGrid').innerHTML = THEMES.map(t=>
+    `<div class="tc_" data-th="${t.id}"><div class="tsw" style="background:${t.s}"></div><div class="tn">${t.n}</div><div class="tt_">${t.t}</div></div>`
+  ).join('');
+
+  // ボタン形状
+  document.getElementById('styleGrid').innerHTML = BTNS.map(b=>
+    `<div class="opt" data-st="${b.id}">${b.l}</div>`
+  ).join('');
+
+  // パーティクル
+  document.getElementById('particleGrid').innerHTML = PFXS.map(p=>
+    `<div class="opt" data-pt="${p.id}">${p.l}</div>`
+  ).join('');
+}
+
+function rebuildPsel(){
+  const sel=document.getElementById('psel');
+  sel.innerHTML=Object.keys(db).map(u=>
+    `<option value="${u}"${u===cur?' selected':''}>${db[u].display_name}（@${u}）</option>`
+  ).join('');
+}
+
+function fillForm(){
+  document.getElementById('dispName').value = prof.display_name||'';
+  document.getElementById('uname').value    = prof.username||'';
+  document.getElementById('bioInp').value   = prof.bio||'';
+  document.getElementById('avUrl').value    = prof.avatar_url||'';
+  syncAvImg();
+
+  document.querySelectorAll('.snp').forEach(i=>{ i.value=(prof.social_links||{})[i.dataset.p]||''; });
+
+  document.querySelectorAll('.tc_').forEach(c=>c.classList.toggle('on',c.dataset.th===prof.theme));
+  document.querySelectorAll('.opt[data-st]').forEach(c=>c.classList.toggle('on',c.dataset.st===prof.button_style));
+  document.querySelectorAll('.opt[data-pt]').forEach(c=>c.classList.toggle('on',c.dataset.pt===(prof.particle_effect||'sparkle')));
+
+  renderLinks();
+}
+
+function syncAvImg(){
+  const img=document.getElementById('avI');
+  img.src=prof.avatar_url||'';
+  img.style.display=prof.avatar_url?'block':'none';
+}
+
+// ─── リンクリスト ───
+// 構造変化時のみ再描画。テキスト入力では DOM を直接書き換えない。
+function renderLinks(){
+  const ll=document.getElementById('ll');
+  const links=prof.links||[];
+  if(!links.length){
+    ll.innerHTML='<div class="empty">🔗<br>上のボタンからリンクを追加してください</div>';
+    return;
+  }
+  ll.innerHTML='';
+  links.forEach((lnk,i)=>{
+    const isHd = lnk.link_type==='header';
+    const ico  = lnk.icon||'link';
+    const em   = isHd?'🏷️':(IEMO[ico]||'🔗');
+    const icls = isHd?'ib-hd':(ICLS[ico]||'ib-lk');
+
+    const d=document.createElement('div');
+    d.className=`lc${isHd?' hd':''}`;
+    d.innerHTML=`
+      <div class="mvcol">
+        <button class="mv mvu"${i===0?' disabled':''}>▲</button>
+        <button class="mv mvd"${i===links.length-1?' disabled':''}>▼</button>
+      </div>
+      <div class="ib ${icls}" id="ib${i}">${em}</div>
+      <div class="lf">
+        <div class="lr1">
+          ${isHd
+            ? `<span style="font-size:9px;font-weight:800;color:#a5b4fc;background:rgba(99,102,241,.15);padding:2px 7px;border-radius:3px;">見出し</span>`
+            : `<select class="isel" id="is${i}">
+                <option value="youtube"${ico==='youtube'?' selected':''}>🔴 YouTube</option>
+                <option value="tiktok"${ico==='tiktok'?' selected':''}>🎵 TikTok</option>
+                <option value="twitter"${ico==='twitter'?' selected':''}>✖ X</option>
+                <option value="instagram"${ico==='instagram'?' selected':''}>📸 Instagram</option>
+                <option value="line"${ico==='line'?' selected':''}>💬 LINE</option>
+                <option value="discord"${ico==='discord'?' selected':''}>👾 Discord</option>
+                <option value="twitch"${ico==='twitch'?' selected':''}>🟣 Twitch</option>
+                <option value="shop"${ico==='shop'?' selected':''}>🛍 Shop</option>
+                <option value="globe"${ico==='globe'?' selected':''}>🌐 Web</option>
+                <option value="mail"${ico==='mail'?' selected':''}>✉ Mail</option>
+                <option value="link"${ico==='link'?' selected':''}>🔗 汎用</option>
+              </select>`}
+          <input class="inp lt" id="lt${i}" type="text" placeholder="タイトル" value="${esc(lnk.title)}">
+        </div>
+        ${!isHd?`
+        <div class="lr2">
+          <input class="inp lu" id="lu${i}" type="text" placeholder="URL" value="${esc(lnk.url||'')}">
+          <input class="inp ls" id="ls${i}" type="text" placeholder="サブタイトル" value="${esc(lnk.subtitle||'')}">
+        </div>
+        <div class="lr3">
+          <span style="font-size:9px;color:var(--t3);font-weight:700;white-space:nowrap;">バッジ:</span>
+          <div class="bsels">
+            <span class="bo bon${!lnk.badge?' on':''}" data-b="">なし</span>
+            <span class="bo boh${lnk.badge==='hot'?' on':''}" data-b="hot">🔥 HOT</span>
+            <span class="bo bol${lnk.badge==='live'?' on':''}" data-b="live">🔴 LIVE</span>
+            <span class="bo bow${lnk.badge==='new'?' on':''}" data-b="new">✨ NEW</span>
+            <span class="bo bog${lnk.badge==='gift'?' on':''}" data-b="gift">🎁 特典</span>
+          </div>
+        </div>`:''}
+      </div>
+      <div class="la">
+        ${!isHd?`<span class="clk">👀${lnk.click_count||0}</span>`:''}
+        <label class="tog"><input type="checkbox"${lnk.is_active?' checked':''}><span class="tsl"></span></label>
+        <button class="del">🗑</button>
+      </div>
+    `;
+
+    // イベント（クロージャでiを固定）
+    const upd = ()=>{ markUs(); dSave(); };
+
+    d.querySelector(`#lt${i}`).addEventListener('input', e=>{ prof.links[i].title=e.target.value; pushPreview(); upd(); });
+
+    if(!isHd){
+      d.querySelector(`#lu${i}`).addEventListener('input', e=>{
+        prof.links[i].url=e.target.value;
+        autoIco(i, e.target.value, d);
+        pushPreview(); upd();
+      });
+      d.querySelector(`#ls${i}`).addEventListener('input', e=>{ prof.links[i].subtitle=e.target.value; pushPreview(); upd(); });
+      d.querySelector(`#is${i}`).addEventListener('change', e=>{
+        prof.links[i].icon=e.target.value;
+        setIb(d,i,e.target.value);
+        pushPreview(); upd();
+      });
+      d.querySelectorAll('.bo').forEach(b=>{
+        b.addEventListener('click',()=>{
+          d.querySelectorAll('.bo').forEach(x=>x.classList.remove('on'));
+          b.classList.add('on');
+          prof.links[i].badge=b.dataset.b;
+          pushPreview(); upd();
+        });
+      });
+    }
+
+    d.querySelector('input[type=checkbox]').addEventListener('change', e=>{ prof.links[i].is_active=e.target.checked?1:0; pushPreview(); upd(); });
+    d.querySelector('.del').addEventListener('click', ()=>{
+      if(confirm(`「${prof.links[i].title}」を削除しますか？`)){ prof.links.splice(i,1); renderLinks(); pushPreview(); upd(); }
+    });
+    d.querySelector('.mvu').addEventListener('click', ()=>{
+      if(i>0){[prof.links[i],prof.links[i-1]]=[prof.links[i-1],prof.links[i]]; renderLinks(); pushPreview(); upd();}
+    });
+    d.querySelector('.mvd').addEventListener('click', ()=>{
+      if(i<links.length-1){[prof.links[i],prof.links[i+1]]=[prof.links[i+1],prof.links[i]]; renderLinks(); pushPreview(); upd();}
+    });
+
+    ll.appendChild(d);
+  });
+}
+
+function setIb(card,i,ico){
+  const b=card.querySelector(`#ib${i}`); if(!b) return;
+  b.className=`ib ${ICLS[ico]||'ib-lk'}`;
+  b.textContent=IEMO[ico]||'🔗';
+}
+
+function autoIco(i,url,card){
+  const M=[['youtube.com','youtube'],['youtu.be','youtube'],['tiktok.com','tiktok'],['x.com','twitter'],['twitter.com','twitter'],['instagram.com','instagram'],['line.me','line'],['discord.gg','discord'],['discord.com','discord'],['twitch.tv','twitch']];
+  for(const[d,ico] of M){
+    if(url.includes(d) && prof.links[i].icon!==ico){
+      prof.links[i].icon=ico;
+      const s=card.querySelector(`#is${i}`); if(s) s.value=ico;
+      setIb(card,i,ico);
+      break;
+    }
+  }
+}
+
+function esc(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ─── グローバルイベント ───
+function bindGlobal(){
+  // タブ
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+      document.querySelectorAll('.tc').forEach(x=>x.classList.remove('on'));
+      t.classList.add('on');
+      document.getElementById(`tc-${t.dataset.tab}`).classList.add('on');
+    });
+  });
+
+  // クイックプロフ
+  document.getElementById('dispName').addEventListener('input', e=>{
+    prof.display_name = e.target.value;
+    const opt = document.querySelector('#psel option:checked');
+    if(opt) opt.textContent = `${prof.display_name || '(無名)'}（@${prof.username}）`;
+    markUs(); pushPreview(); dSave();
+  });
+  document.getElementById('uname').addEventListener('input', e=>{
+    const v = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g,'');
+    if(e.target.value !== v) e.target.value = v;
+    prof.username = v;
+    const opt = document.querySelector('#psel option:checked');
+    if(opt) opt.textContent = `${prof.display_name || '(無名)'}（@${prof.username}）`;
+    markUs(); pushPreview(); dSave();
+  });
+  document.getElementById('uname').addEventListener('change', ()=>{ saveDB(); });
+  document.getElementById('bioInp').addEventListener('input', e=>{ prof.bio=e.target.value; markUs(); pushPreview(); dSave(); });
+  document.getElementById('avUrl').addEventListener('input', e=>{ prof.avatar_url=e.target.value; syncAvImg(); markUs(); pushPreview(); dSave(); });
+  document.getElementById('avF').addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    new Promise(res=>{ const r=new FileReader(); r.onload=ev=>res(ev.target.result); r.readAsDataURL(f); })
+      .then(data=>{ prof.avatar_url=data; document.getElementById('avUrl').value=''; syncAvImg(); markUs(); pushPreview(); dSave(); });
+  });
+
+  // SNS（委譲）
+  document.getElementById('tc-social').addEventListener('input', e=>{
+    if(!e.target.classList.contains('snp')) return;
+    prof.social_links=prof.social_links||{};
+    prof.social_links[e.target.dataset.p]=e.target.value.trim();
+    markUs(); pushPreview(); dSave();
+  });
+
+  // テーマ（委譲）
+  document.getElementById('themeGrid').addEventListener('click', e=>{
+    const c=e.target.closest('.tc_'); if(!c) return;
+    document.querySelectorAll('.tc_').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); prof.theme=c.dataset.th;
+    markUs(); pushPreview(); dSave();
+  });
+  document.getElementById('styleGrid').addEventListener('click', e=>{
+    const c=e.target.closest('.opt[data-st]'); if(!c) return;
+    document.querySelectorAll('.opt[data-st]').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); prof.button_style=c.dataset.st;
+    markUs(); pushPreview(); dSave();
+  });
+  document.getElementById('particleGrid').addEventListener('click', e=>{
+    const c=e.target.closest('.opt[data-pt]'); if(!c) return;
+    document.querySelectorAll('.opt[data-pt]').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); prof.particle_effect=c.dataset.pt;
+    markUs(); pushPreview(); dSave();
+  });
+
+  // チップ追加
+  document.querySelector('.chips').addEventListener('click', e=>{
+    const ch=e.target.closest('.chip'); if(!ch) return;
+    const p=ch.dataset.p; const pr=PST[p]||PST.link;
+    prof.links=prof.links||[];
+    prof.links.push({id:Date.now(),...pr,link_type:pr.link_type||'button',is_active:1,click_count:0});
+    renderLinks(); pushPreview(); markUs(); dSave();
+  });
+
+  // プルダウン切替
+  document.getElementById('psel').addEventListener('change', e=>switchProf(e.target.value));
+
+  // 保存ボタン
+  document.getElementById('btnSave').addEventListener('click', ()=>{
+    saveDB();
+    const btn = document.getElementById('btnSave');
+    const old = btn.textContent;
+    btn.textContent = '✅ 保存完了';
+    btn.style.background = '#059669';
+    setTimeout(()=>{ btn.textContent = old; btn.style.background = ''; }, 1200);
+  });
+
+  // リセット（iframe再ロード）
+  document.getElementById('btnReset').addEventListener('click', ()=>{
+    pvReady=false; pvF.src=`index.html?t=${Date.now()}`;
+  });
+
+  // 新規アカウント
+  document.getElementById('btnNew').addEventListener('click', ()=>{
+    document.getElementById('nU').value='';
+    document.getElementById('nD').value='';
+    document.getElementById('nErr').style.display='none';
+    om('m-new');
+  });
+  document.getElementById('btnCreate').addEventListener('click', ()=>{
+    const u=document.getElementById('nU').value.trim().toLowerCase();
+    const d=document.getElementById('nD').value.trim();
+    const err=document.getElementById('nErr');
+    if(!u||!/^[a-z0-9_-]+$/.test(u)){ err.style.display='block'; err.textContent='IDは半角英数字/ハイフン/アンダーバーで入力してください'; return; }
+    if(db[u]){ err.style.display='block'; err.textContent='そのIDは既に使用中です'; return; }
+    db[u]={...clone(DEF),username:u,display_name:d||u,links:[]};
+    localStorage.setItem(SK,JSON.stringify(db));
+    cm('m-new'); rebuildPsel(); switchProf(u);
+  });
+
+  // QR共有
+  document.getElementById('btnShare').addEventListener('click', ()=>{
+    const url=location.href.replace(/editor\.html.*$/,'index.html');
+    document.getElementById('sUrl').value=url;
+    document.getElementById('qrI').src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(url)}`;
+    om('m-share');
+  });
+  document.getElementById('cpUrl').addEventListener('click', function(){
+    const i=document.getElementById('sUrl'); i.select();
+    navigator.clipboard.writeText(i.value).catch(()=>{});
+    this.textContent='✅'; setTimeout(()=>this.textContent='コピー',1500);
+  });
+
+  // エクスポート
+  document.getElementById('btnExport').addEventListener('click', ()=>{
+    const js=genJS();
+    document.getElementById('expPre').textContent=js.substring(0,480)+'…';
+    om('m-export');
+  });
+  document.getElementById('btnDl').addEventListener('click', ()=>{
+    const b=new Blob([genJS()],{type:'text/javascript'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download='profile-data.js'; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  // モーダルクローズ
+  document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>cm(b.dataset.m)));
+  document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) cm(m.id); }));
+
+  window.addEventListener('beforeunload', e=>{
+    if(document.getElementById('sind').classList.contains('us')){ e.preventDefault(); e.returnValue=''; }
+  });
+}
+
+function genJS(){
+  return `// profile-data.js - BioLink Studio 生成ファイル\nwindow.BIOLINK_DATA = ${JSON.stringify(prof,null,2)};\n`;
+}
+
+init();
+</script>
+</body>
+</html>
