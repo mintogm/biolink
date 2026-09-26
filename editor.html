@@ -209,14 +209,13 @@
   <div class="logo">🔗 BioLink<em>Studio</em></div>
   <div class="nav-mid">
     <select id="psel" class="psel"></select>
-    <button id="btnNew" class="btn bs">＋</button>
+    <button id="btnNew" class="btn bs" title="新規アカウント作成">＋</button>
   </div>
   <div class="nav-rt">
     <div class="sind sv" id="sind">保存済み</div>
-    <button id="btnShare" class="btn bs">📤 QR</button>
-    <button id="btnExport" class="btn bg_">📦 GitHub</button>
-    <a id="btnPv" class="btn bs" href="index.html" target="_blank">🔗 公開</a>
-    <button id="btnSave" class="btn bp">💾 保存</button>
+    <button id="btnSave" class="btn bs">💾 保存</button>
+    <button id="btnShare" class="btn bp" style="box-shadow:0 0 10px rgba(99,102,241,.4);font-weight:800;">🔗 共有リンク発行</button>
+    <button id="btnExport" class="btn bg_">📦 GitHub同期</button>
   </div>
 </nav>
 
@@ -339,34 +338,57 @@
   </div>
 </div>
 
-<!-- エクスポートモーダル -->
+<!-- GitHub同期モーダル -->
 <div class="mov" id="m-export">
-  <div class="modal">
-    <div class="mh"><h3>📦 GitHub Pages 公開</h3><button class="mcls" data-m="m-export">✕</button></div>
+  <div class="modal" style="max-width:440px;">
+    <div class="mh"><h3>📦 GitHub本体のデフォルト更新</h3><button class="mcls" data-m="m-export">✕</button></div>
     <div class="mb">
-      <ol class="steps">
-        <li>「ダウンロード」で <code>profile-data.js</code> を取得</li>
-        <li><code>biolink/static/</code> フォルダごと GitHub にプッシュ</li>
-        <li>Settings → Pages → Deploy from branch → main / <code>/biolink/static</code></li>
-        <li><code>https://ユーザー名.github.io/リポジトリ名/</code> で公開完了！</li>
-      </ol>
+      <p style="font-size:11px;color:var(--t2);margin-bottom:8px;line-height:1.5;">
+        トップページ（<code>https://mintogm.github.io/biolink/</code>）自体の表示をこのデータで固定したい場合、下のコードをコピーしてGitHub上の <code>profile-data.js</code> に貼り付けるだけで反映できます。
+      </p>
       <div class="expre" id="expPre"></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button id="btnCopyJs" class="btn bp fw">📋 コードをコピー</button>
+        <button id="btnDl" class="btn bs fw">⬇ ファイルDL</button>
+      </div>
+      <ol class="steps">
+        <li>「コードをコピー」をクリック</li>
+        <li>GitHubリポジトリの <code>profile-data.js</code> を開いて鉛筆マーク（編集）をクリック</li>
+        <li>中身を全て上書き貼り付けして右上の「Commit changes」をクリックで完了！</li>
+      </ol>
     </div>
-    <div class="mf"><button id="btnDl" class="btn bg_ fw">⬇ profile-data.js をダウンロード</button></div>
   </div>
 </div>
 
-<!-- QRモーダル -->
+<!-- 共有リンク発行モーダル -->
 <div class="mov" id="m-share">
-  <div class="modal">
-    <div class="mh"><h3>📤 QR / 共有</h3><button class="mcls" data-m="m-share">✕</button></div>
-    <div class="mb" style="text-align:center;">
-      <img id="qrI" src="" alt="QR" style="width:130px;height:130px;border-radius:8px;border:3px solid #fff;margin-bottom:8px;">
-      <div class="fc" style="text-align:left;">
-        <label>ローカルURL</label>
+  <div class="modal" style="max-width:440px;">
+    <div class="mh"><h3>🔗 あなた専用の公開リンク（SNS用）</h3><button class="mcls" data-m="m-share">✕</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px;">
+        編集した名前・アイコン・バッジ・動画リンクが<strong>全て反映された公開URL</strong>です。<br>
+        このURLをTikTokやYouTube、X（Twitter）のプロフィール欄に貼るだけで誰でも閲覧できます！
+      </p>
+
+      <div class="fc">
+        <label>プロフィール用 共有URL</label>
         <div style="display:flex;gap:6px;">
-          <input class="inp" id="sUrl" type="text" readonly>
-          <button class="btn bp" id="cpUrl">コピー</button>
+          <input class="inp" id="sUrl" type="text" readonly style="font-size:11px;color:#60a5fa;font-weight:600;">
+          <button class="btn bp" id="cpUrl" style="white-space:nowrap;">📋 コピー</button>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;margin:12px 0;">
+        <a id="btnOpenUrl" href="#" target="_blank" class="btn bs" style="width:100%;justify-content:center;padding:7px;font-size:12px;text-align:center;">
+          👁️ ブラウザで開いて確認する ↗
+        </a>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--s2);border-radius:8px;border:1px solid var(--bd);">
+        <img id="qrI" src="" alt="QR" style="width:90px;height:90px;border-radius:6px;border:2px solid #fff;flex-shrink:0;">
+        <div style="font-size:11px;color:var(--t2);line-height:1.4;">
+          <strong>📱 スマホのカメラでテスト</strong><br>
+          スマホでこのQRを読み込むと、今作ったリンクまとめページがそのまま開きます！
         </div>
       </div>
     </div>
@@ -805,29 +827,68 @@ function bindGlobal(){
     cm('m-new'); rebuildPsel(); switchProf(u);
   });
 
-  // QR共有
+  // 共有URLエンコード（UTF-8安全Base64URL）
+  function encodeDataToUrl(data) {
+    try {
+      const jsonStr = JSON.stringify(data);
+      const bytes = new TextEncoder().encode(jsonStr);
+      let binStr = '';
+      for (let i = 0; i < bytes.length; i++) binStr += String.fromCharCode(bytes[i]);
+      return btoa(binStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    } catch(err) {
+      return '';
+    }
+  }
+
+  // 共有リンク発行
   document.getElementById('btnShare').addEventListener('click', ()=>{
-    const url=location.href.replace(/editor\.html.*$/,'index.html');
-    document.getElementById('sUrl').value=url;
-    document.getElementById('qrI').src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(url)}`;
+    saveDB();
+    const payload = encodeDataToUrl(prof);
+    let baseUrl = window.location.href.split('?')[0].split('#')[0];
+    if(baseUrl.endsWith('/editor.html')) {
+      baseUrl = baseUrl.replace(/\/editor\.html$/, '/index.html');
+    } else if(baseUrl.endsWith('/')) {
+      baseUrl = baseUrl + 'index.html';
+    } else if(!baseUrl.endsWith('/index.html')) {
+      baseUrl = baseUrl + '/index.html';
+    }
+    const shareUrl = `${baseUrl}?d=${payload}`;
+
+    document.getElementById('sUrl').value = shareUrl;
+    document.getElementById('btnOpenUrl').href = shareUrl;
+    document.getElementById('qrI').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}`;
     om('m-share');
   });
+
   document.getElementById('cpUrl').addEventListener('click', function(){
-    const i=document.getElementById('sUrl'); i.select();
+    const i = document.getElementById('sUrl');
+    i.select();
     navigator.clipboard.writeText(i.value).catch(()=>{});
-    this.textContent='✅'; setTimeout(()=>this.textContent='コピー',1500);
+    this.textContent = '✅ コピー完了！';
+    setTimeout(()=>{ this.textContent = '📋 コピー'; }, 1500);
   });
 
-  // エクスポート
+  // GitHub同期モーダル
   document.getElementById('btnExport').addEventListener('click', ()=>{
-    const js=genJS();
-    document.getElementById('expPre').textContent=js.substring(0,480)+'…';
+    saveDB();
+    const js = genJS();
+    document.getElementById('expPre').textContent = js.substring(0, 500) + '…';
     om('m-export');
   });
+
+  document.getElementById('btnCopyJs').addEventListener('click', function(){
+    const js = genJS();
+    navigator.clipboard.writeText(js).catch(()=>{});
+    this.textContent = '✅ コピー完了！';
+    setTimeout(()=>{ this.textContent = '📋 コードをコピー'; }, 1500);
+  });
+
   document.getElementById('btnDl').addEventListener('click', ()=>{
-    const b=new Blob([genJS()],{type:'text/javascript'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(b); a.download='profile-data.js'; a.click();
+    const b = new Blob([genJS()], {type:'text/javascript'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = 'profile-data.js';
+    a.click();
     URL.revokeObjectURL(a.href);
   });
 
