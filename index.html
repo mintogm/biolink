@@ -331,8 +331,30 @@
     if (e.data && e.data.type === 'BIOLINK_UPDATE') boot(e.data.data);
   });
 
-  // 初期データ: profile-data.js → localStorage の順でフォールバック
-  let initData = window.BIOLINK_DATA || null;
+  // URLからのデータ復元（URL即時共有機能）
+  function decodeDataFromUrl() {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      let raw = searchParams.get('d');
+      if (!raw && window.location.hash) {
+        const hashMatch = window.location.hash.match(/[#&]d=([^&]+)/);
+        if (hashMatch) raw = hashMatch[1];
+      }
+      if (!raw) return null;
+      const base64 = decodeURIComponent(raw).replace(/-/g, '+').replace(/_/g, '/');
+      const binStr = atob(base64);
+      const bytes = new Uint8Array(binStr.length);
+      for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+      const jsonStr = new TextDecoder().decode(bytes);
+      return JSON.parse(jsonStr);
+    } catch(err) {
+      console.warn('URL data decode failed:', err);
+      return null;
+    }
+  }
+
+  // 初期データ決定: 1. URL共有パラメータ 2. profile-data.js 3. localStorage
+  let initData = decodeDataFromUrl() || window.BIOLINK_DATA || null;
   if (!initData) {
     try {
       const dbRaw = JSON.parse(localStorage.getItem('bls_v3') || '{}');
